@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drudge代币铸造</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff7eb3, #7e7eff, #ffcc7e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        .anime-bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            z-index: 0;
+            background-image: 
+                radial-gradient(circle at 10% 20%, #ff6b6b 0%, transparent 15%),
+                radial-gradient(circle at 90% 80%, #4ecdc4 0%, transparent 20%),
+                radial-gradient(circle at 50% 30%, #ff9e7d 0%, transparent 18%),
+                radial-gradient(circle at 30% 70%, #7e7eff 0%, transparent 22%);
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+            border: 5px solid #ff6b6b;
+            z-index: 10;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #ff6b6b, #4ecdc4);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .lang-switch {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 20;
+        }
+        
+        .lang-switch:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 10px 0;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header p {
+            color: #f8f9fa;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .anime-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.2;
+            z-index: 1;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .meme-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .meme {
+            width: 300px;
+            height: 200px;
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 4px solid #4ecdc4;
+        }
+        
+        .bull, .horse {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .bull {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="30" r="20" fill="%23ff6b6b"/><circle cx="40" cy="25" r="4" fill="white"/><circle cx="60" cy="25" r="4" fill="white"/><circle cx="40" cy="25" r="1.5" fill="black"/><circle cx="60" cy="25" r="1.5" fill="black"/><path d="M45 35 Q50 40 55 35" stroke="black" stroke-width="1" fill="none"/><path d="M30 40 Q50 30 70 40 L65 60 L35 60 Z" fill="%23ff6b6b"/><path d="M25 45 L15 40" stroke="black" stroke-width="3"/><path d="M25 55 L15 60" stroke="black" stroke-width="3"/><path d="M75 45 L85 40" stroke="black" stroke-width="3"/><path d="M75 55 L85 60" stroke="black" stroke-width="3"/></svg>');
+            top: 20px;
+            left: 50px;
+            animation: move 8s linear infinite;
+        }
+        
+        .horse {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M30 30 Q50 10 70 30 Q80 40 75 50 Q80 60 70 70 Q50 90 30 70 Q20 60 25 50 Q20 40 30 30 Z" fill="%234ecdc4"/><circle cx="45" cy="35" r="5" fill="white"/><circle cx="55" cy="35" r="5" fill="white"/><circle cx="45" cy="35" r="2" fill="black"/><circle cx="55" cy="35" r="2" fill="black"/><path d="M50 45 Q50 50 45 50" stroke="black" stroke-width="1" fill="none"/><path d="M20 60 L10 55" stroke="black" stroke-width="3"/><path d="M20 70 L10 75" stroke="black" stroke-width="3"/><path d="M80 60 L90 55" stroke="black" stroke-width="3"/><path d="M80 70 L90 75" stroke="black" stroke-width="3"/></svg>');
+            top: 100px;
+            left: 180px;
+            animation: move 10s linear infinite reverse;
+        }
+        
+        .meme-text {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 2px white;
+            padding: 0 10px;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid #ffd166;
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+        }
+        
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        
+        .progress-bar {
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4ecdc4, #1a936f);
+            width: 81.6%;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin: 5px 0;
+        }
+        
+        .mint-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid #ff6b6b;
+        }
+        
+        .mint-section h2 {
+            color: #ff6b6b;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #4ecdc4;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            border-color: #ff6b6b;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+        }
+        
+        .amount-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #ff6b6b, #ff9e7d);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn:disabled {
+            background: #ced4da;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .token-info {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .token-highlight {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .wallet-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .wallet-address {
+            background: #e9ecef;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .connect-btn {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .connect-btn:hover {
+            background: #3db8af;
+            transform: scale(1.05);
+        }
+        
+        .success-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            font-size: 3rem;
+            color: #ffcc00;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        @keyframes move {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(20px) translateY(-10px); }
+            50% { transform: translateX(0) translateY(0); }
+            75% { transform: translateX(-20px) translateY(10px); }
+            100% { transform: translateX(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes coin-fly {
+            0% { 
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% { 
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0.5);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .meme {
+                width: 250px;
+                height: 180px;
+            }
+            
+            .wallet-info {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="anime-bg-pattern"></div>
+    
+    <div class="container">
+        <div class="header">
+            <button class="lang-switch" id="langSwitch">
+                <span>EN</span>
+                <i class="fas fa-globe"></i>
+            </button>
+            <h1 id="title">Drudge代币铸造</h1>
+            <p id="subtitle">讽刺当代牛马生活的动漫风格Meme代币 - 用幽默反抗996</p>
+        </div>
+        
+        <div class="content">
+            <div class="meme-container">
+                <div class="meme">
+                    <div class="bull"></div>
+                    <div class="horse"></div>
+                    <div class="meme-text" id="memeText">"加班使我快乐，工资使我自由"</div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <h2 id="progressTitle">铸造进度</h2>
+                <div class="progress-container">
+                    <div class="progress-labels">
+                        <span>0 BNB</span>
+                        <span id="targetAmount">5 BNB</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill">
+                            <div class="progress-text" id="progressText">81.60%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div id="raisedLabel">已募集</div>
+                        <div class="stat-value" id="raisedAmount">4.08 BNB</div>
+                        <div id="targetLabel">目标: 5 BNB</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="remainingLabel">剩余额度</div>
+                        <div class="stat-value" id="remainingAmount">0.92 BNB</div>
+                        <div id="statusText">即将售罄</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="priceLabel">当前价格</div>
+                        <div class="stat-value">0.02 BNB</div>
+                        <div id="rateLabel">= 1000 DRUDGE</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="mintedLabel">已铸造</div>
+                        <div class="stat-value" id="mintedAmount">204,000</div>
+                        <div id="tokenLabel">DRUDGE代币</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mint-section">
+                <h2 id="mintTitle">铸造您的Drudge代币</h2>
+                
+                <div class="wallet-info">
+                    <span id="currentWallet">当前钱包:</span>
+                    <div class="wallet-address" id="walletAddress">未连接</div>
+                    <button class="connect-btn" id="connectBtn">
+                        <i class="fas fa-wallet"></i>
+                        <span id="connectText">连接钱包</span>
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bnbAmount" id="bnbAmountLabel">输入BNB数量</label>
+                    <input type="number" id="bnbAmount" min="0.02" max="1" step="0.02" value="0.02">
+                    <div class="amount-info">
+                        <span id="minAmount">最小: 0.02 BNB</span>
+                        <span id="maxAmount">最大: 1 BNB</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="receiveAmount" id="receiveLabel">您将收到</label>
+                    <input type="text" id="receiveAmount" value="1,000 DRUDGE" readonly>
+                </div>
+                
+                <div class="message" id="message"></div>
+                
+                <button class="btn" id="mintBtn">
+                    <i class="fas fa-coins"></i>
+                    <span id="mintBtnText">铸造代币</span>
+                </button>
+                
+                <div class="token-info">
+                    <span id="userMintedText">您当前已铸造:</span> 
+                    <span class="token-highlight" id="userMinted">0</span> DRUDGE 
+                    <span id="maxMintText">(本地址最多可铸造3次)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="success-animation" id="successAnimation">
+        <i class="fas fa-coins"></i>
+    </div>
+
+    <script>
+        // 合约ABI - 根据您修改后的合约生成
+        const contractABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "recipient",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "distributeTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address payable",
+				"name": "_beneficiary",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "allowance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "needed",
+				"type": "uint256"
+			}
+		],
+		"name": "ERC20InsufficientAllowance",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "balance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "needed",
+				"type": "uint256"
+			}
+		],
+		"name": "ERC20InsufficientBalance",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "approver",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidApprover",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidReceiver",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidSender",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidSpender",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "OwnableInvalidOwner",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "OwnableUnauthorizedAccount",
+		"type": "error"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Approval",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "oldBeneficiary",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "newBeneficiary",
+				"type": "address"
+			}
+		],
+		"name": "BeneficiaryChanged",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "mintTokens",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "previousOwner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "renounceOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address payable",
+				"name": "_newBeneficiary",
+				"type": "address"
+			}
+		],
+		"name": "setBeneficiary",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "TokensDistributed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "bnbAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "TokensMinted",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withdrawBNB",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			}
+		],
+		"name": "allowance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "beneficiary",
+		"outputs": [
+			{
+				"internalType": "address payable",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "decimals",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_PER_ADDRESS",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_PER_TX",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_SUPPLY",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MIN_AMOUNT",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "mintCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "TARGET_AMOUNT",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "TOKEN_RATE",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalRaised",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalSupply",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+        ];
+        
+        // 合约地址（部署后替换为您的合约地址）
+        const contractAddress = "0x9bCd062c237a60ddF8895F758999cC0e78995342"; // 替换为您的合约地址
+        
+        // 全局变量
+        let web3;
+        let drudgeContract;
+        let currentAccount = null;
+        let userMintedCount = 0;
+        let currentRaised = 4.08;
+        const targetAmount = 5;
+        
+        // 初始化
+        window.addEventListener('load', async () => {
+            // 初始化以太坊提供者
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await initContract();
+            } else {
+                showMessage("请安装MetaMask或其他以太坊钱包扩展", "error");
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('mintBtn').disabled = true;
+            }
+            
+            // 设置语言
+            updateLanguage(currentLanguage);
+            
+            // 更新进度条
+            updateProgressBar();
+            
+            // 事件监听器
+            document.getElementById('langSwitch').addEventListener('click', toggleLanguage);
+            document.getElementById('connectBtn').addEventListener('click', connectWallet);
+            document.getElementById('bnbAmount').addEventListener('input', updateReceiveAmount);
+            document.getElementById('mintBtn').addEventListener('click', mintTokens);
+        });
+        
+        // 初始化合约
+        async function initContract() {
+            drudgeContract = new web3.eth.Contract(contractABI, contractAddress);
+            
+            // 获取合约状态
+            try {
+                // 获取已筹集的BNB
+                const raised = await drudgeContract.methods.totalRaised().call();
+                currentRaised = web3.utils.fromWei(raised, 'ether');
+                
+                updateProgressBar();
+            } catch (error) {
+                console.error("获取合约数据失败:", error);
+            }
+        }
+        
+        // 切换语言
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
+            updateLanguage(currentLanguage);
+        }
+        
+        // 更新页面语言
+        function updateLanguage(lang) {
+            const data = languageData[lang];
+            
+            // 更新所有文本元素
+            document.getElementById('title').textContent = data.title;
+            document.getElementById('subtitle').textContent = data.subtitle;
+            document.getElementById('memeText').textContent = data.memeText;
+            document.getElementById('progressTitle').textContent = data.progressTitle;
+            document.getElementById('raisedLabel').textContent = data.raisedLabel;
+            document.getElementById('remainingLabel').textContent = data.remainingLabel;
+            document.getElementById('statusText').textContent = data.statusText;
+            document.getElementById('priceLabel').textContent = data.priceLabel;
+            document.getElementById('rateLabel').textContent = data.rateLabel;
+            document.getElementById('mintedLabel').textContent = data.mintedLabel;
+            document.getElementById('tokenLabel').textContent = data.tokenLabel;
+            document.getElementById('mintTitle').textContent = data.mintTitle;
+            document.getElementById('currentWallet').textContent = data.currentWallet;
+            document.getElementById('bnbAmountLabel').textContent = data.bnbAmountLabel;
+            document.getElementById('minAmount').textContent = data.minAmount;
+            document.getElementById('maxAmount').textContent = data.maxAmount;
+            document.getElementById('receiveLabel').textContent = data.receiveLabel;
+            document.getElementById('mintBtnText').textContent = data.mintBtnText;
+            document.getElementById('connectText').textContent = data.connectText;
+            document.getElementById('userMintedText').textContent = data.userMintedText;
+            document.getElementById('maxMintText').textContent = data.maxMintText;
+            
+            // 更新按钮文本
+            document.getElementById('langSwitch').innerHTML = lang === 'zh' ? 
+                '<span>EN</span><i class="fas fa-globe"></i>' : 
+                '<span>中文</span><i class="fas fa-globe"></i>';
+        }
+        
+        // 更新进度条
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            const percentage = (currentRaised / targetAmount) * 100;
+            progressFill.style.width = `${percentage}%`;
+            progressText.textContent = `${percentage.toFixed(2)}%`;
+            
+            // 更新数据
+            document.getElementById('raisedAmount').textContent = currentRaised.toFixed(2) + " BNB";
+            document.getElementById('remainingAmount').textContent = (targetAmount - currentRaised).toFixed(2) + " BNB";
+            document.getElementById('mintedAmount').textContent = Math.floor(currentRaised * 50000).toLocaleString();
+            
+            // 超过100%时改变颜色
+            if (percentage >= 100) {
+                progressFill.style.background = 'linear-gradient(to right, #ff6b6b, #ff9e7d)';
+                document.getElementById('statusText').textContent = 
+                    currentLanguage === 'zh' ? "超额完成!" : "Overfunded!";
+            }
+        }
+        
+        // 更新接收代币数量
+        function updateReceiveAmount() {
+            const bnbAmount = parseFloat(document.getElementById('bnbAmount').value) || 0;
+            const receiveInput = document.getElementById('receiveAmount');
+            const data = languageData[currentLanguage];
+            
+            // 验证输入
+            if (bnbAmount < 0.02) {
+                receiveInput.value = data.errorMin;
+                return;
+            }
+            
+            if (bnbAmount > 1) {
+                receiveInput.value = data.errorMax;
+                return;
+            }
+            
+            // 检查是否为0.02的倍数
+            if (bnbAmount % 0.02 !== 0) {
+                receiveInput.value = data.errorMultiplier;
+                return;
+            }
+            
+            // 计算接收的代币数量
+            const tokens = (bnbAmount / 0.02) * 1000;
+            receiveInput.value = `${tokens.toLocaleString()} DRUDGE`;
+        }
+        
+        // 连接钱包
+        async function connectWallet() {
+            const data = languageData[currentLanguage];
+            
+            try {
+                // 请求账户访问
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                currentAccount = accounts[0];
+                
+                // 显示钱包地址
+                const shortAddress = currentAccount.substring(0, 6) + '...' + currentAccount.substring(currentAccount.length - 4);
+                document.getElementById('walletAddress').textContent = shortAddress;
+                showMessage(data.successConnect, "success");
+                
+                // 更新按钮状态
+                document.getElementById('connectBtn').innerHTML = 
+                    `<i class="fas fa-check"></i> <span>${data.connectText}</span>`;
+                document.getElementById('connectBtn').style.background = '#1a936f';
+                
+                // 获取用户铸造次数
+                try {
+                    const count = await drudgeContract.methods.mintCount(currentAccount).call();
+                    userMintedCount = parseInt(count);
+                    document.getElementById('userMinted').textContent = (userMintedCount * 1000).toLocaleString();
+                } catch (error) {
+                    console.error("获取铸造次数失败:", error);
+                }
+            } catch (error) {
+                showMessage(data.errorConnect, "error");
+                console.error("连接钱包失败:", error);
+            }
+        }
+        
+        // 铸造代币
+        async function mintTokens() {
+            const bnbAmount = parseFloat(document.getElementById('bnbAmount').value);
+            const data = languageData[currentLanguage];
+            
+            // 验证钱包连接
+            if (!currentAccount) {
+                showMessage(data.errorWallet, "error");
+                return;
+            }
+            
+            // 验证输入
+            if (isNaN(bnbAmount) || bnbAmount < 0.02) {
+                showMessage(data.errorMin, "error");
+                return;
+            }
+            
+            if (bnbAmount > 1) {
+                showMessage(data.errorMax, "error");
+                return;
+            }
+            
+            if (bnbAmount % 0.02 !== 0) {
+                showMessage(data.errorMultiplier, "error");
+                return;
+            }
+            
+            if (userMintedCount >= 3) {
+                showMessage(data.errorMintLimit, "error");
+                return;
+            }
+            
+            // 计算乘数
+            const multiplier = Math.round(bnbAmount / 0.02);
+            
+            // 转换金额为wei
+            const bnbWei = web3.utils.toWei(bnbAmount.toString(), 'ether');
+            
+            // 显示交易进行中消息
+            showMessage(currentLanguage === 'zh' ? "交易进行中，请确认钱包..." : "Processing transaction, confirm in wallet...", "");
+            
+            try {
+                // 调用合约的mintTokens函数
+                const tx = await drudgeContract.methods.mintTokens().send({
+                    from: currentAccount,
+                    value: bnbWei
+                });
+                
+                // 交易成功
+                const tokens = multiplier * 1000;
+                let message = `${data.successMint} ${tokens.toLocaleString()} DRUDGE`;
+                
+                // 更新状态
+                const raised = await drudgeContract.methods.totalRaised().call();
+                currentRaised = parseFloat(web3.utils.fromWei(raised, 'ether'));
+                userMintedCount += multiplier;
+                
+                // 更新UI
+                updateProgressBar();
+                document.getElementById('userMinted').textContent = (userMintedCount * 1000).toLocaleString();
+                
+                if (currentRaised > targetAmount) {
+                    message += currentLanguage === 'zh' ? " (已超额)" : " (Overfunded)";
+                }
+                
+                showMessage(message, "success");
+                animateMintSuccess();
+                
+            } catch (error) {
+                console.error("铸造失败:", error);
+                showMessage(data.errorMint, "error");
+            }
+        }
+        
+        // 显示消息
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = "message " + type;
+            messageDiv.style.display = "block";
+            
+            // 3秒后隐藏消息
+            if (type) {
+                setTimeout(() => {
+                    messageDiv.style.display = "none";
+                }, 3000);
+            }
+        }
+        
+        // 铸造成功动画
+        function animateMintSuccess() {
+            const mintBtn = document.getElementById('mintBtn');
+            mintBtn.style.animation = "pulse 0.5s ease-in-out";
+            
+            setTimeout(() => {
+                mintBtn.style.animation = "";
+            }, 500);
+            
+            // 创建多个金币元素
+            const coinsCount = 15;
+            for (let i = 0; i < coinsCount; i++) {
+                createCoinAnimation();
+            }
+        }
+        
+        // 创建金币动画
+        function createCoinAnimation() {
+            const coin = document.createElement('div');
+            coin.innerHTML = '<i class="fas fa-coins"></i>';
+            coin.style.position = 'fixed';
+            coin.style.top = '50%';
+            coin.style.left = '50%';
+            coin.style.transform = 'translate(-50%, -50%)';
+            coin.style.fontSize = '2rem';
+            coin.style.color = '#ffcc00';
+            coin.style.zIndex = '1000';
+            coin.style.opacity = '1';
+            document.body.appendChild(coin);
+            
+            // 随机目标位置
+            const targetX = (Math.random() - 0.5) * 300;
+            const targetY = (Math.random() - 0.5) * 300 - 100;
+            
+            // 动画效果
+            const animation = coin.animate([
+                { 
+                    opacity: 1, 
+                    transform: 'translate(-50%, -50%) scale(1) rotate(0deg)' 
+                },
+                { 
+                    opacity: 0, 
+                    transform: `translate(${targetX}px, ${targetY}px) scale(0.5) rotate(${Math.random() * 360}deg)` 
+                }
+            ], {
+                duration: 1500,
+                easing: 'ease-out'
+            });
+            
+            animation.onfinish = () => {
+                coin.remove();
+            };
+        }
+        
+        // 语言数据
+        const languageData = {
+            zh: {
+                title: "Drudge代币铸造",
+                subtitle: "讽刺当代牛马生活的动漫风格Meme代币 - 用幽默反抗996",
+                memeText: '"加班使我快乐，工资使我自由"',
+                progressTitle: "铸造进度",
+                raisedLabel: "已募集",
+                targetLabel: "目标: 5 BNB",
+                remainingLabel: "剩余额度",
+                statusText: "即将售罄",
+                priceLabel: "当前价格",
+                rateLabel: "= 1000 DRUDGE",
+                mintedLabel: "已铸造",
+                tokenLabel: "DRUDGE代币",
+                mintTitle: "铸造您的Drudge代币",
+                currentWallet: "当前钱包:",
+                bnbAmountLabel: "输入BNB数量",
+                minAmount: "最小: 0.02 BNB",
+                maxAmount: "最大: 1 BNB",
+                receiveLabel: "您将收到",
+                mintBtnText: "铸造代币",
+                connectText: "连接钱包",
+                userMintedText: "您当前已铸造:",
+                maxMintText: "(本地址最多可铸造3次)",
+                successMint: "铸造成功! 您获得了",
+                successConnect: "钱包已连接",
+                errorMin: "请输入至少0.02 BNB",
+                errorMax: "每次最多铸造1 BNB",
+                errorMultiplier: "金额必须是0.02 BNB的倍数",
+                errorMintLimit: "每个地址最多铸造3次",
+                errorWallet: "请先连接钱包",
+                errorMint: "铸造失败，请重试",
+                errorConnect: "连接钱包失败"
+            },
+            en: {
+                title: "Drudge Token Minting",
+                subtitle: "Anime-style Meme Token Satirizing Modern Life - Humor Against 996",
+                memeText: '"Overtime makes me happy, salary makes me free"',
+                progressTitle: "Minting Progress",
+                raisedLabel: "Raised",
+                targetLabel: "Target: 5 BNB",
+                remainingLabel: "Remaining",
+                statusText: "Almost Sold Out",
+                priceLabel: "Current Price",
+                rateLabel: "= 1000 DRUDGE",
+                mintedLabel: "Minted",
+                tokenLabel: "DRUDGE Tokens",
+                mintTitle: "Mint Your Drudge Tokens",
+                currentWallet: "Current Wallet:",
+                bnbAmountLabel: "Enter BNB Amount",
+                minAmount: "Min: 0.02 BNB",
+                maxAmount: "Max: 1 BNB",
+                receiveLabel: "You Will Receive",
+                mintBtnText: "Mint Tokens",
+                connectText: "Connect Wallet",
+                userMintedText: "You've minted:",
+                maxMintText: "(Max 3 mints per address)",
+                successMint: "Minting successful! You received",
+                successConnect: "Wallet connected",
+                errorMin: "Please enter at least 0.02 BNB",
+                errorMax: "Maximum 1 BNB per mint",
+                errorMultiplier: "Amount must be multiple of 0.02 BNB",
+                errorMintLimit: "Maximum 3 mints per address",
+                errorWallet: "Please connect wallet first",
+                errorMint: "Minting failed, please try again",
+                errorConnect: "Failed to connect wallet"
+            }
+        };
+        
+        // 初始语言
+        let currentLanguage = 'zh';
+    </script>
+</body>
+</html>
